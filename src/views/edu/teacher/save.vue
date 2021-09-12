@@ -52,15 +52,24 @@ export default {
         }
     },
     created(){
-        //判断路径是否有id值 
-        if (this.$route.params && this.$route.params.id) {
-        const id = this.$route.params.id
-        this.getInfo(id)
-        }else{
-            this.teacher = {}
+        this.init()
+    },
+    watch:{//监听
+        $route(to,from){
+            this.init()
         }
     },
     methods: {
+        init(){
+            //判断路径是否有id值 
+            if (this.$route.params && this.$route.params.id) {
+                const id = this.$route.params.id
+                this.getInfo(id)
+            }else{
+                this.teacher = {}
+            }
+        },
+
         //根据讲师id查询的方法
         getInfo(id){
             tearcherApi.getTeacherInfo(id)
