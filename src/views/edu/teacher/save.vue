@@ -1,39 +1,115 @@
 <template>
   <div class="app-container">
-    <!--查询表单-->
-    <el-form :inline="true" class="demo-form-inline">
-      <el-form-item>
-        <el-input v-model="searchObj.name" placeholder="讲师名"/>
+    <el-form label-width="120px">
+      <el-form-item label="讲师名称">
+        <el-input v-model="teacher.name"/>
       </el-form-item>
-
-      <el-form-item>
-        <el-select v-model="searchObj.level" clearable placeholder="讲师头衔">
+      <el-form-item label="讲师排序">
+        <el-input-number v-model="teacher.sort" controls-position="right" min="0"/>
+      </el-form-item>
+      <el-form-item label="讲师头衔">
+        <el-select v-model="teacher.level" clearable placeholder="请选择">
+          <!--
+            数据类型一定要和取出的json中的一致，否则没法回填
+            因此，这里value使用动态绑定的值，保证其数据类型是number
+          -->
           <el-option :value="1" label="高级讲师"/>
           <el-option :value="2" label="首席讲师"/>
         </el-select>
       </el-form-item>
-
-      <el-form-item label="添加时间">
-        <el-date-picker
-          v-model="searchObj.begin"
-          type="datetime"
-          placeholder="选择开始时间"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          default-time="00:00:00"
-        />
+      <el-form-item label="讲师资历">
+        <el-input v-model="teacher.career"/>
       </el-form-item>
+      <el-form-item label="讲师简介">
+        <el-input v-model="teacher.intro" :rows="10" type="textarea"/>
+      </el-form-item>
+
+      <!-- 讲师头像：TODO -->
+
       <el-form-item>
-        <el-date-picker
-          v-model="searchObj.end"
-          type="datetime"
-          placeholder="选择截止时间"
-          value-format="yyyy-MM-dd HH:mm:ss"
-          default-time="00:00:00"
-        />
+        <el-button :disabled="saveBtnDisabled" type="primary" @click="saveOrUpdate">保存</el-button>
       </el-form-item>
-
-      <el-button type="primary" icon="el-icon-search" @click="fetchData()">查询</el-button>
-      <el-button type="default" @click="resetData()">清空</el-button>
     </el-form>
   </div>
 </template>
+
+<script>
+
+import tearcherApi from '@/api/edu/teacher';
+
+export default {
+    data(){
+        return{
+            teacher:{
+                name: '',
+                sort: 0,
+                level: 1,
+                career: '',
+                intro: '',
+                avatar: ''
+            },
+            saveBtnDisabled: false // 保存按钮是否禁用,
+        }
+    },
+    created(){
+        //判断路径是否有id值 
+        if (this.$route.params && this.$route.params.id) {
+        const id = this.$route.params.id
+        this.getInfo(id)
+        }else{
+            this.teacher = {}
+        }
+    },
+    methods: {
+        //根据讲师id查询的方法
+        getInfo(id){
+            tearcherApi.getTeacherInfo(id)
+                .then(response=>{
+                    this.teacher = response.data.items
+                })
+        },
+        //修改讲师的方法
+        updateTeacher(){
+            tearcherApi.updateTeacherInfo(this.teacher)
+            .then(response =>{
+                  //提示信息
+                this.$message({ 
+                    type: 'success',
+                    message: '修改成功!'
+                 });
+                //回到列表页面 路由跳转
+                this.$router.push({ path: '/teacher/table' })
+            })
+        },
+        saveOrUpdate(){
+            //判断修改或者添加
+            //根据teacher是否有id 有id就是添加 没有id就是更新
+            if(!this.teacher.id){
+                //添加
+                this.saveTeacher()
+            }else{
+                //修改
+                this.updateTeacher();
+            }
+
+
+        },
+
+        //添加讲师的方法
+        saveTeacher(){
+            tearcherApi.addTearcher(this.teacher)
+            .then(reponse =>{
+                //提示信息
+                this.$message({ 
+                    type: 'success',
+                    message: '添加成功!'
+                 });
+                //回到列表页面 路由跳转
+                this.$router.push({ path: '/teacher/table' })
+            })
+        }
+    }
+
+
+}
+</script>
