@@ -142,6 +142,25 @@ export default {
             this.tearchQuery = {}
             //查询所有讲师数据
             this.getList()
+        },
+        //删除讲师方法
+        removeDataById(id) {
+            this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+                }).then(() => {
+                        teacher.deleteTeacherId(id)
+                            .then(response =>{
+                            //提示信息
+                            this.$message({ 
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                            //回到列表页面
+                            this.getList()
+                    })
+                })
         }
     }
 }
